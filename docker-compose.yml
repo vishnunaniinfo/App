@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Application Services
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/xavira
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=development
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - JWT_REFRESH_SECRET=dev-refresh-key-change-in-production
+      - WHATSAPP_PROVIDER=MOCK
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:3001/api
+      - VITE_DEMO_MODE=false
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Database Services
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=xavira
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d xavira"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --appendfsync everysec
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Migration Service
+  prisma-migrate:
+    build: ./backend
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/xavira
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - migration
+
+  # Seed Data Service
+  prisma-seed:
+    build: ./backend
+    command: ["npm", "run", "seed"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/xavira
+    depends_on:
+      prisma-migrate:
+        condition: service_completed_success
+    profiles:
+      - seed
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: xavira-network
