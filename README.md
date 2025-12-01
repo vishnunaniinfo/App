@@ -1,8 +1,9 @@
 <p align="center">
-  <img src="https://via.placeholder.com/220x60?text=Xavira+Tech+Labs" alt="Xavira Logo"/>
+  <img src="https://via.placeholder.com/220x60?text=Xavira+Tech+Labs" alt="<img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/ab907cea-74d7-4866-8928-a3db26b31731" />
+"/>
 </p>
 
-<h1 align="center">🚀 Xavira Lead Engine</h1>
+<h1 align="center"> Xavira Lead Engine</h1>
 <h3 align="center">Enterprise Real Estate Lead Management + WhatsApp Automation</h3>
 
 <p align="center">
