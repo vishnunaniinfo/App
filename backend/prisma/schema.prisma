@@ -1,0 +1,310 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Builder represents a real estate company/client
+model Builder {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(255)
+  subdomain String   @unique @db.VarChar(100) @regex("^[a-z0-9-]+$")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users               User[]
+  projects            Project[]
+  leads               Lead[]
+  automationSequences AutomationSequence[]
+  messageTemplates    MessageTemplate[]
+  messageLogs         MessageLog[]
+  whatsappConfigs     WhatsAppConfig[]
+  activities          Activity[]
+
+  @@map("builders")
+  @@index([subdomain])
+}
+
+// User represents team members within a builder organization
+model User {
+  id           String    @id @default(cuid())
+  name         String    @db.VarChar(255)
+  email        String    @unique
+  passwordHash String    @db.VarChar(255)
+  role         UserRole  @default(AGENT)
+  builderId    String
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  builder   Builder      @relation(fields: [builderId], references: [id], onDelete: Cascade)
+  leads     Lead[]       @relation("AssignedLeads")
+  activities Activity[]
+
+  @@map("users")
+  @@index([builderId, email])
+  @@index([builderId, role])
+}
+
+// Project represents a real estate project
+model Project {
+  id          String   @id @default(cuid())
+  builderId   String
+  name        String   @db.VarChar(255)
+  city        String   @db.VarChar(100)
+  description String?  @db.VarChar(1000)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  builder Builder @relation(fields: [builderId], references: [id], onDelete: Cascade)
+  leads   Lead[]
+
+  @@map("projects")
+  @@index([builderId, isActive])
+}
+
+// Lead represents a potential customer
+model Lead {
+  id             String       @id @default(cuid())
+  projectId      String
+  builderId      String
+  name           String       @db.VarChar(255)
+  phone          String       @db.VarChar(20) // E.164 format
+  email          String?      @db.VarChar(255)
+  source         String       @db.VarChar(100)
+  stage          LeadStage    @default(NEW)
+  assignedTo     String?
+  lastContactedAt DateTime?
+  nextFollowUpAt DateTime?
+  meta           Json?        // Additional data like budget, preferences
+  notes          String?      @db.VarChar(2000)
+  isDeleted      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  project              Project              @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  builder              Builder              @relation(fields: [builderId], references: [id], onDelete: Cascade)
+  assignedToUser       User?                @relation("AssignedLeads", fields: [assignedTo], references: [id])
+  messageLogs         MessageLog[]
+  activities          Activity[]
+  sequenceExecutions  SequenceExecution[]
+
+  @@unique([builderId, phone]) // Phone deduplication within builder
+  @@map("leads")
+  @@index([builderId, phone])
+  @@index([projectId, stage])
+  @@index([assignedTo, lastContactedAt])
+}
+
+// Automation sequences for follow-up messages
+model AutomationSequence {
+  id           String              @id @default(cuid())
+  builderId    String
+  name         String              @db.VarChar(255)
+  description  String?             @db.VarChar(1000)
+  triggerEvent AutomationTrigger   @default(LEAD_CREATED)
+  triggerStage String?
+  steps        Json                // Array of {delayHours, messageTemplateId, sendAt}
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  // Relations
+  builder            Builder             @relation(fields: [builderId], references: [id], onDelete: Cascade)
+  sequenceExecutions SequenceExecution[]
+  messageLogs        MessageLog[]
+
+  @@map("automation_sequences")
+  @@index([builderId, isActive])
+}
+
+// Message templates for WhatsApp communication
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  builderId String
+  name      String   @db.VarChar(255)
+  content   String   @db.VarChar(10000)
+  variables Json?    // Array of variable names for validation
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  builder            Builder             @relation(fields: [builderId], references: [id], onDelete: Cascade)
+  automationSteps    AutomationStep[]
+  messageLogs        MessageLog[]
+
+  @@map("message_templates")
+  @@index([builderId, isActive])
+}
+
+// Individual steps within automation sequences
+model AutomationStep {
+  id                  String @id @default(cuid())
+  sequenceId          String
+  messageTemplateId   String
+  delayHours          Int
+  order               Int
+  businessHoursOnly   Boolean @default(false)
+  createdAt           DateTime @default(now())
+
+  // Relations
+  sequence        AutomationSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  messageTemplate MessageTemplate    @relation(fields: [messageTemplateId], references: [id], onDelete: Restrict)
+
+  @@unique([sequenceId, order])
+  @@map("automation_steps")
+  @@index([sequenceId, order])
+}
+
+// Track execution of automation sequences for specific leads
+model SequenceExecution {
+  id           String    @id @default(cuid())
+  leadId       String
+  sequenceId   String
+  isActive     Boolean   @default(true)
+  currentStep  Int       @default(0)
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  lead     Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  sequence AutomationSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, sequenceId])
+  @@map("sequence_executions")
+  @@index([leadId, isActive])
+}
+
+// Message logs for all WhatsApp communications
+model MessageLog {
+  id               String        @id @default(cuid())
+  leadId           String
+  sequenceId       String?
+  stepIndex        Int?
+  templateId       String?
+  providerMessageId String?      // Message ID from WhatsApp provider
+  provider         WhatsAppProvider
+  status           MessageStatus @default(PENDING)
+  direction        MessageDirection
+  content          String        @db.Text
+  errorMessage     String?
+  sentAt           DateTime?
+  deliveredAt      DateTime?
+  repliedAt        DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  lead     Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  sequence AutomationSequence? @relation(fields: [sequenceId], references: [id], onDelete: SetNull)
+  template MessageTemplate?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@map("message_logs")
+  @@index([leadId, createdAt])
+  @@index([provider, status])
+  @@index([sentAt])
+}
+
+// Activity logs for lead interactions
+model Activity {
+  id        String       @id @default(cuid())
+  leadId    String
+  userId    String
+  type      ActivityType
+  note      String       @db.VarChar(2000)
+  metadata  Json?        // Additional context like oldStage, newStage
+  createdAt DateTime     @default(now())
+
+  // Relations
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+  @@index([leadId, createdAt])
+  @@index([userId, createdAt])
+}
+
+// WhatsApp configuration per builder
+model WhatsAppConfig {
+  id           String            @id @default(cuid())
+  builderId    String
+  provider     WhatsAppProvider
+  apiKey       String            @db.Text // Encrypted
+  phoneNumber  String            @db.VarChar(20) // E.164 format
+  accountSid   String?           @db.VarChar(100)
+  serviceName  String?           @db.VarChar(100)
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Relations
+  builder Builder @relation(fields: [builderId], references: [id], onDelete: Cascade)
+
+  @@unique([builderId, isActive])
+  @@map("whatsapp_configs")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MANAGER
+  AGENT
+}
+
+enum LeadStage {
+  NEW
+  CONTACTED
+  HOT
+  VISITING
+  BOOKED
+  LOST
+}
+
+enum AutomationTrigger {
+  LEAD_CREATED
+  STAGE_CHANGED
+  MANUAL
+}
+
+enum WhatsAppProvider {
+  TWILIO
+  ULTRAMSG
+  MOCK
+}
+
+enum MessageStatus {
+  PENDING
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  REPLIED
+}
+
+enum MessageDirection {
+  OUTBOUND
+  INBOUND
+}
+
+enum ActivityType {
+  NOTE
+  CALL
+  EMAIL
+  WHATSAPP
+  STAGE_CHANGE
+  ASSIGNMENT
+}
