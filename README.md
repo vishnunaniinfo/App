@@ -1,133 +1,547 @@
-<p align="center">
-  <img src="https://via.placeholder.com/220x60?text=Xavira+Tech+Labs" alt="<img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/ab907cea-74d7-4866-8928-a3db26b31731" />
-"/>
-</p>
 
-<h1 align="center"> Xavira Lead Engine</h1>
-<h3 align="center">Enterprise Real Estate Lead Management + WhatsApp Automation</h3>
+# Xavira Lead Engine
 
 <p align="center">
-  Built by <b>Vishnu Vardhan Burri</b><br/>
-  Founder & CEO — <b>Xavira Tech Labs</b>
+  <img src="https://dummyimage.com/600x160/000/fff&text=Xavira+Tech+Labs" width="600" />
 </p>
+
+A complete enterprise-grade lead management and WhatsApp automation platform designed for real-estate builders, agencies, and marketing firms.  
+Built by **Vishnu Vardhan Burri**, Founder & CEO, Xavira Tech Labs.
 
 ---
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-15-blue?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Redis-7-red?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Docker-Ready-blue?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Production-Ready-success?style=for-the-badge"/>
-</p>
+## About the Platform
+
+Xavira Lead Engine provides unified lead management, automated WhatsApp communication, project management, agent performance tracking, analytics dashboards, and enterprise-ready security.  
+It powers high-volume real estate operations with modern, scalable architecture.
 
 ---
 
-## 📸 Product Screenshots
+## System Architecture
 
-> *(Replace with real images later — placeholders added)*
+### High-Level Architecture Diagram
 
-### **Dashboard**
-<p align="center">
-  <img src="https://via.placeholder.com/1200x600?text=Dashboard+Preview" />
-</p>
+```
 
-### **Lead Management**
-<p align="center">
-  <img src="https://via.placeholder.com/1200x600?text=Lead+Management+UI" />
-</p>
+```
+                ┌─────────────────────────────┐
+                │         Frontend             │
+                │   React 19 + Vite + TS       │
+                └─────────────┬───────────────┘
+                              │
+                              ▼
+                 ┌──────────────────────────┐
+                 │        API Gateway       │
+                 │  Node.js + Express + TS  │
+                 └────────────┬─────────────┘
+                              │
+   ┌──────────────────────────┼──────────────────────────┐
+   ▼                          ▼                          ▼
+```
 
-### **WhatsApp Automation**
-<p align="center">
-  <img src="https://via.placeholder.com/1200x600?text=WhatsApp+Automation+Flow" />
-</p>
+┌──────────────┐        ┌────────────────┐         ┌───────────────────┐
+│ PostgreSQL   │        │ Redis (Cache) │         │ Redis (BullMQ)     │
+│ Lead/Users   │        │ Sessions      │         │ Queues/Automation  │
+└──────────────┘        └────────────────┘         └───────────────────┘
 
----
+```
+                              │
+                              ▼
+                   ┌──────────────────────┐
+                   │ WhatsApp Providers   │
+                   │ Twilio / UltraMsg    │
+                   └──────────────────────┘
+```
 
-## 🎬 Demo (GIF Preview)
-<p align="center">
-  <img src="https://via.placeholder.com/900x500?text=Demo+GIF+Placeholder" />
-</p>
-
----
-
-# 🚀 Overview
-
-**Xavira Lead Engine** is a complete enterprise SaaS platform built for real-estate companies, brokers, and marketing teams.
-
-It includes:
-
-- Lead management  
-- WhatsApp automation  
-- Sales pipeline  
-- Agent performance analytics  
-- Automation workflows  
-- Complete API ecosystem  
-
-This is a fully scalable, production-grade system following modern industry standards.
+```
 
 ---
 
-# ✨ Features
+## Features
 
-## 🏗 Core Modules
+### Lead Management
+- Multi-channel lead capture (API, forms, integrations)
+- Deduplication with normalized phone numbers
+- Lead scoring and qualification
+- Pipeline stages with drag-and-drop interface
+- Full activity timeline with interaction logs
+- Lead assignment and agent workload system
 
-### **Lead Management**
-- Multi-channel lead capture (webhooks, forms, imports)
-- Duplicate prevention with phone-number matching
-- Lead scoring + qualification logic
-- Timeline activity history
-- Drag-and-drop pipeline
+### WhatsApp Automation Engine
+- Multi-provider architecture
+- Message templates with dynamic variables
+- Follow-up sequences (0h, 24h, 72h)
+- Delivery status tracking
+- Inbound message processing
+- Business hours compliant scheduling
 
-### **WhatsApp Automation**
-- Multi-provider support: Twilio, UltraMsg, Mock
-- Template messages with dynamic variables
-- Scheduled message sequences (0h / 24h / 48h / 72h)
-- Business-hours filtering
-- Auto-update lead stage from replies
-- Delivery tracking + retry engine
+### Dashboard & Analytics
+- Interactive KPI dashboard
+- Lead source analytics
+- Agent performance charts
+- Pipeline metrics
+- Response time analytics
+- Exportable reports
 
-### **Team Collaboration**
-- Roles: Admin, Manager, Agent
-- Lead assignment rules
-- Agent performance insights
-- Secure audit logging
+### Security
+- JWT authentication with refresh rotation
+- Role-based access control
+- Rate-limiting per route and per IP
+- SQL-injection safe ORM (Prisma)
+- Audit logging
+- GDPR-compliant data handling
 
-### **Dashboard & Analytics**
-- Total leads, conversions, revenue potential
-- Source-wise breakdown
-- Performance heatmaps
-- Export to CSV/PDF
-
----
-
-# 🧱 Architecture
-
-### **Backend**
-- Node.js + Express  
-- TypeScript  
-- Prisma ORM  
-- PostgreSQL  
-- Redis (cache + queues)  
-- BullMQ for automation jobs  
-- JWT Auth  
-
-### **Frontend**
-- React 19  
-- Vite  
-- Tailwind CSS  
-- React Query  
-- Recharts  
-
-### **DevOps**
-- Docker  
-- Nginx reverse proxy  
-- Production builds  
-- CI/CD ready  
+### Infrastructure
+- Dockerized architecture
+- nginx reverse proxy
+- Database migrations and schema versioning
+- Full CI/CD readiness
 
 ---
 
-# 📦 Folder Structure
+## Technology Stack
+
+### Backend
+- Node.js + Express + TypeScript
+- Prisma ORM
+- PostgreSQL database
+- Redis (Cache, Sessions, Queues)
+- BullMQ
+
+### Frontend
+- React 19
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Query
+
+### Deployment
+- Docker & Docker Compose
+- nginx for production
+- Environment-based config system
+
+---
+
+## Screenshot Layout (Placeholder)
+
+```
+
+[ Dashboard Screenshot ]
+[ Pipeline Screenshot ]
+[ WhatsApp Automation Builder ]
+[ Team Performance Dashboard ]
+
+````
+
+---
+
+## Quick Start
+
+### Development
+```bash
+docker-compose up -d
+````
+
+### Backend Only
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### Frontend Only
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## Project Structure
+
+```
+backend/
+  src/
+    routes/
+    middleware/
+    prisma/
+    queues/
+    modules/
+frontend/
+  src/
+    components/
+    pages/
+    hooks/
+    services/
+docker/
+docs/
+```
+
+---
+
+## Deployment (Production)
+
+```bash
+docker-compose -f docker-compose.yml up --build
+```
+
+---
+
+## Author
+
+**Vishnu Vardhan Burri**
+Founder & CEO – Xavira Tech Labs
+LinkedIn: [https://www.linkedin.com/in/vishnu-vardhan-burri](https://www.linkedin.com/in/vishnu-vardhan-burri)
+
+---
+
+## License
+
+Copyright ©
+Xavira Tech Labs
+Proprietary License
+
+````
+
+---
+
+# **2. GitHub Wiki Documentation Set**  
+Create these files inside GitHub Wiki.
+
+---
+
+### **Home.md**
+
+```md
+# Xavira Lead Engine Documentation
+
+Welcome to the official documentation for the Xavira Lead Engine.
+
+## Sections
+- [System Overview](System-Overview.md)
+- [Architecture](Architecture.md)
+- [API Guide](API.md)
+- [Frontend Guide](Frontend.md)
+- [Backend Modules](Backend.md)
+- [Deployment Guide](Deployment.md)
+- [Security](Security.md)
+- [Database Schema](Database-Schema.md)
+````
+
+---
+
+### **System-Overview.md**
+
+```md
+# System Overview
+
+Xavira Lead Engine is an enterprise-grade platform for real estate lead management with WhatsApp automation and CRM features.
+
+## Key Capabilities
+- Lead Management
+- WhatsApp Automation
+- Team Collaboration
+- Dashboards and Analytics
+- Project and Agent Management
+- Enterprise Security
+```
+
+---
+
+### **Architecture.md**
+
+```md
+# Architecture
+
+The system follows a modular microservice-friendly structure with a monorepo layout.
+
+## Components
+- Frontend (React)
+- Backend API (Node.js)
+- PostgreSQL
+- Redis Cache
+- Redis Queue System (BullMQ)
+- WhatsApp Provider Layer
+- nginx Reverse Proxy
+
+```
+
+---
+
+### **API.md**
+
+```md
+# API Guide
+
+Base URL: `/api`
+
+## Sections
+- Authentication
+- Leads
+- WhatsApp
+- Automation
+- Projects
+- Users
+- Dashboard
+```
+
+---
+
+### **Backend.md**
+
+```md
+# Backend Architecture
+
+## Modules
+- Auth Module
+- User Module
+- Lead Module
+- WhatsApp Module
+- Automation Module
+- Project Module
+- Dashboard Module
+
+## Libraries
+- Express.js
+- Prisma ORM
+- Zod Validation
+- BullMQ
+- Redis
+```
+
+---
+
+### **Frontend.md**
+
+```md
+# Frontend Architecture
+
+## Technology
+- React 19
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Query
+
+## Structure
+- Components
+- Pages
+- Services
+- Hooks
+```
+
+---
+
+### **Deployment.md**
+
+````md
+# Deployment Guide
+
+## Development
+```bash
+docker-compose up -d
+````
+
+## Production
+
+```bash
+docker-compose -f docker-compose.yml up --build
+```
+
+## nginx Setup
+
+Included in `docker/nginx.conf`
+
+````
+
+---
+
+### **Security.md**
+
+```md
+# Security
+
+- JWT authentication
+- Rate limiting
+- Role-based access control
+- Audit logs
+- SQL injection safe queries
+- Data encryption policies
+- GDPR compliant
+````
+
+---
+
+### **Database-Schema.md**
+
+```md
+# Database Schema
+
+Includes Entity-Relationship documentation for:
+- Users
+- Leads
+- Projects
+- Message Templates
+- Automation Sequences
+- Message Logs
+- Activities
+```
+
+---
+
+# **3. Full API Reference README**
+
+```md
+# API Reference
+
+Base URL (Development)
+```
+
+[http://localhost:3001/api](http://localhost:3001/api)
+
+````
+
+---
+
+## Authentication
+
+### POST /auth/login
+Request:
+```json
+{
+  "email": "admin@example.com",
+  "password": "password"
+}
+````
+
+Response:
+
+```json
+{
+  "token": "",
+  "refreshToken": ""
+}
+```
+
+---
+
+## Leads
+
+### POST /public/webhook/lead
+
+```json
+{
+  "name": "Ravi",
+  "phone": "+919876543210",
+  "project": "Sunrise",
+  "source": "facebook"
+}
+```
+
+### GET /leads
+
+Pagination + search supported.
+
+### PATCH /leads/:id
+
+### DELETE /leads/:id
+
+---
+
+## WhatsApp Messaging
+
+### POST /whatsapp/send
+
+```json
+{
+  "phone": "+919876543210",
+  "templateId": "welcome"
+}
+```
+
+---
+
+## Automation Sequences
+
+### POST /automation/sequence
+
+### GET /automation/sequence
+
+---
+
+## Projects
+
+### GET /projects
+
+### POST /projects
+
+---
+
+## Users
+
+### GET /users
+
+### POST /users
+
+---
+
+## Dashboard
+
+### GET /dashboard/summary
+
+---
+
+# **4. Landing Page-Style README**
+
+````md
+# Xavira Lead Engine  
+Enterprise Lead Management and WhatsApp Automation System
+
+## Built For
+Builders, real estate agencies, property developers, and marketing firms who need a scalable, automated CRM.
+
+## Highlights
+- Lead capture from multiple channels
+- WhatsApp automation engine with templates and sequences
+- Team and agent management
+- Real-time dashboard analytics
+- Enterprise security and role-based access
+
+## Technology
+- Node.js + TypeScript
+- PostgreSQL + Prisma
+- Redis + BullMQ
+- React 19 + Vite
+- Tailwind CSS
+- Docker & Production Deployment
+
+## Live Architecture Diagram
+(Placeholder for uploaded image)
+
+## Get Started
+```bash
+docker-compose up -d
+````
+
+Frontend:
+
+```
+http://localhost:3000
+```
+
+Backend:
+
+```
+http://localhost:3001
+```
+
+## Author
+
+Vishnu Vardhan Burri
+Founder & CEO — Xavira Tech Labs
+
+```
 
